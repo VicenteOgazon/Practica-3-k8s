@@ -1,0 +1,4 @@
+flask==3.0.*
+mysql-connector-python
+minio==7.2.7
+prometheus-flask-exporter==0.23.2

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pro
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pro-monitoring

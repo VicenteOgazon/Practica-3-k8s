@@ -1,0 +1,143 @@
+body {
+  font-family: "Inter", Arial, sans-serif;
+  background: #f8fafc;
+  color: #111;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 700px;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  padding: 2rem;
+}
+
+h1, h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #222;
+}
+
+form {
+  width: 100%;
+  display: grid;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+input {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+button {
+  background-color: #0071e3;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #005bb5;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #f2f4f7;
+  font-weight: 600;
+}
+
+.delete {
+  width: 100%;
+  background-color: #e53e3e;
+}
+
+.delete:hover {
+  background-color: #c53030;
+}
+
+.popup {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  background-color: #e53e3e; /* rojo error */
+  color: white;
+  padding: 1.2rem 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 2000;
+  text-align: center;
+  min-width: 300px;
+  max-width: 80%;
+}
+
+.popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* 🔹 Widget flotante de estado */
+.status-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-size: 0.9rem;
+  z-index: 1000;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.light {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-left: 8px;
+  background-color: gray;
+  transition: background-color 0.3s ease;
+}

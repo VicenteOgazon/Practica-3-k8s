@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY app ./app
+
+COPY dockerfile/dev_requirements.txt ./app
+
+# Instalar curl (necesario para healthcheck)
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir -r app/dev_requirements.txt
+
+#USER default
+
+CMD ["python", "-m", "app"]

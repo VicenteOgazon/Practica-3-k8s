@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estado del sistema</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Estado de los servicios</h1>
+    {% for service, state in status.items() %}
+      <div class="service">
+        <span>{{ service.upper() }}</span>
+        <span class="{{ state }}">{{ state.upper() }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>

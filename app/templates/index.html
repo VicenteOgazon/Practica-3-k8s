@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Usuarios</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body {% if background_url %}style="background-image: url('{{ background_url }}'); background-size: cover;"{% endif %}>
+
+  <div class="status-container">
+    <h3><div class="status-item"></span><span id="instance-name">{{ container_name }}</span></div></h3>
+    <h2>Servicios</h2>
+    <div class="status-item">Web: </span><span id="web-light" class="light"></span></div>
+    <div class="status-item">BBDD: </span><span id="db-light" class="light"></span></div>
+    <div class="status-item">Cache: </span><span id="cache-light" class="light"></span></div>
+  </div>
+  <div class="container">
+    <h1>Gestión de Usuarios</h1>
+    <!-- 🔹 Formulario para añadir usuario -->
+    <h2>Agregar nuevo usuario</h2>
+    <form action="/set" method="post">
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" name="nombre" id="nombre" required />
+      </div>
+
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
+        <input type="text" name="apellido" id="apellido" required />
+      </div>
+
+      <div class="form-group">
+        <label for="edad">Edad</label>
+        <input type="number" name="edad" id="edad" required />
+      </div>
+
+      <div class="form-group">
+        <label for="correo">Correo</label>
+        <input type="email" name="correo" id="correo" required />
+      </div>
+
+      <div class="form-group">
+        <label for="ciudad">Ciudad</label>
+        <input type="text" name="ciudad" id="ciudad" required />
+      </div>
+
+      <button type="submit">Agregar usuario</button>
+    </form>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 2px solid #292727;" />
+
+    <button id="btnCargar" style="width: 100%;">Cargar usuarios</button>
+
+    <h2>Lista de usuarios</h2>
+    
+    <form action="/delete" method="post" id="formEliminar">
+      <table id="tablaUsuarios" style="display:none;">
+        <thead>
+          <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Edad</th>
+            <th>Correo</th>
+            <th>Ciudad</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button type="submit" class="delete">Eliminar seleccionados</button>
+    </form>
+  </div>
+
+  <div id="popup" class="popup"></div>
+
+  <script>
+    const popup = document.getElementById("popup");
+
+    // Función para mostrar el popup con un mensaje
+    function showPopup(message) {
+      popup.textContent = message;
+      popup.classList.add("show");
+
+      setTimeout(() => {
+        popup.classList.remove("show");
+      }, 2000);
+    }
+
+    document.getElementById("btnCargar").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/usuarios/json");
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          showPopup(data.error || "Error desconocido al consultar la base de datos");
+          return;
+        }
+
+        const tbody = document.querySelector("#tablaUsuarios tbody");
+        tbody.innerHTML = "";
+
+        data.usuarios.forEach(u => {
+          tbody.innerHTML += `
+            <tr>
+              <td><input type="checkbox" name="ids" value="${u.id}" /></td>
+              <td>${u.id}</td>
+              <td>${u.nombre}</td>
+              <td>${u.apellido}</td>
+              <td>${u.edad}</td>
+              <td>${u.correo}</td>
+              <td>${u.ciudad}</td>
+            </tr>
+          `;
+        });
+
+        document.getElementById("tablaUsuarios").style.display = "table";
+
+      } catch (err) {
+        showPopup("Error de conexión con el servidor Flask");
+      }
+    });
+  </script>
+  
+  <script>
+    async function updateStatus() {
+      try {
+        const response = await fetch("/health");
+        const data = await response.json();
+
+        for (const [service, state] of Object.entries(data)) {
+          const light = document.getElementById(`${service}-light`);
+
+          if (state === "up") {
+            light.style.backgroundColor = "limegreen";
+          } else if (state === "down") {
+            light.style.backgroundColor = "red";
+          } else {
+            light.style.backgroundColor = "gray";
+          }
+        }
+      } catch (e) {
+        console.error("Error actualizando estado:", e);
+        ["web", "db", "cache"].forEach((s) => {
+          document.getElementById(`${s}-light`).style.backgroundColor = "gray";
+          document.getElementById(`${s}-text`).textContent = "ERROR";
+        });
+      }
+    }
+
+    // Ejecutar cada 5 segundos
+    setInterval(updateStatus, 5000);
+    updateStatus();
+  </script>
+
+</body>
+</html>
