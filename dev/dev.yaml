@@ -274,6 +274,8 @@ kind: Service
 metadata:
   name: web
   namespace: dev
+  labels:
+    app: web
 spec:
   selector:
     app: web

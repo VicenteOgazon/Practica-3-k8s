@@ -1,0 +1,56 @@
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.dev.localhost
+    path: /
+    pathType: Prefix
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+  additionalDataSources:
+    - name: Prometheus
+      uid: prometheus
+      type: prometheus
+      access: proxy
+      url: http://monitoring-kube-prometheus-prometheus:9090
+      isDefault: true
+      editable: false
+
+# En k3s/k3d, para evitar ruido/targets que no existen (muy típico), desactivamos scrapes de control-plane
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+
+# Y desactivamos reglas por defecto que dependen de esos componentes (si no, te saldrán alertas “basura”)
+defaultRules:
+  create: true
+  rules:
+    etcd: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+
+# Tu alerta obligatoria (DEV: quieres 2 réplicas disponibles)
+additionalPrometheusRulesMap:
+  dev-app-rules:
+    groups:
+      - name: dev.web.availability
+        rules:
+          - alert: DevWebReplicasNotReady
+            expr: kube_deployment_status_replicas_available{namespace="dev", deployment="web"} < 2
+            for: 2m
+            labels:
+              severity: warning
+            annotations:
+              summary: "DEV: web con menos de 2 réplicas disponibles"
+              description: "deployment dev/web tiene menos de 2 réplicas disponibles durante más de 2 minutos."

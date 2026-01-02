@@ -2,6 +2,7 @@ import mimetypes
 from urllib.parse import urlparse
 import os
 from flask import Blueprint, render_template, request, redirect, jsonify, current_app, url_for, Response, abort
+from http import HTTPStatus
 import mysql.connector
 from mysql.connector import Error
 from minio import Minio
@@ -171,27 +172,33 @@ def status_page():
 
 @bp.route("/health", methods=["GET"])
 def health():
-    """Devuelve el estado de los servicios en formato JSON (para la interfaz dinámica)."""
-    status = {"web": "up", "db": "unknown", "cache": "unknown"}
-
-    # --- Base de datos ---
+    # DB requerida
     conn = get_connection()
-    status["db"] = "up" if conn else "down"
+    db_ok = conn is not None
     if conn:
         conn.close()
 
-    # --- Caché ---
-    try:
-        from .cache import get_cache_connection
-        cache = get_cache_connection()
-        if cache and cache.ping():
-            status["cache"] = "up"
-        else:
-            status["cache"] = "down"
-    except Exception:
-        status["cache"] = "down"
+    # Redis solo si USE_CACHE=True
+    use_cache = current_app.config.get("USE_CACHE", False)
 
-    return jsonify(status)
+    cache_ok = True
+    if use_cache:
+        try:
+            from .cache import get_cache_connection
+            cache = get_cache_connection()
+            cache_ok = bool(cache) and bool(cache.ping())
+        except Exception:
+            cache_ok = False
+
+    ok = db_ok and cache_ok
+    code = HTTPStatus.OK if ok else HTTPStatus.SERVICE_UNAVAILABLE
+
+    return jsonify({
+        "ok": ok,
+        "db": db_ok,
+        "cache": cache_ok if use_cache else None
+    }), code
+
 
 @bp.route("/crash")
 def crash():
@@ -199,6 +206,7 @@ def crash():
     os._exit(1)
     
     return "This will never be returned"
+
 
 @bp.route("/assets/<path:key>", methods=["GET"])
 def asset(key: str):
