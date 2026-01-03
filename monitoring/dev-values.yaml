@@ -14,14 +14,14 @@ grafana:
       folderAnnotation: grafana_folder
       provider:
         foldersFromFilesStructure: true
-  additionalDataSources:
-    - name: Prometheus
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+      isDefaultDatasource: true
+      name: Prometheus
       uid: prometheus
-      type: prometheus
-      access: proxy
       url: http://monitoring-kube-prometheus-prometheus:9090
-      isDefault: true
-      editable: false
+
 
 # En k3s/k3d, para evitar ruido/targets que no existen (muy típico), desactivamos scrapes de control-plane
 kubeEtcd:

@@ -30,7 +30,7 @@ data:
           {
             "name": "namespace",
             "type": "query",
-            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
             "query": "label_values(kube_pod_info, namespace)",
             "current": { "text": "dev", "value": "dev" },
             "refresh": 1
@@ -38,7 +38,7 @@ data:
           {
             "name": "pod",
             "type": "query",
-            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
             "query": "label_values(kube_pod_info{namespace=\"$namespace\"}, pod)",
             "regex": "/^web-.*/",
             "includeAll": true,
@@ -53,7 +53,7 @@ data:
         {
           "type": "timeseries",
           "title": "CPU por pod (cores)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
@@ -66,7 +66,7 @@ data:
         {
           "type": "timeseries",
           "title": "Memoria por pod (bytes)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
           "targets": [
             {
@@ -79,7 +79,7 @@ data:
         {
           "type": "timeseries",
           "title": "HTTP Requests/s (total)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
           "targets": [
             {
@@ -92,7 +92,7 @@ data:
         {
           "type": "timeseries",
           "title": "HTTP Requests/s (5xx)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
           "targets": [
             {
@@ -105,7 +105,7 @@ data:
         {
           "type": "timeseries",
           "title": "HTTP Latency p95 (seconds)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
           "targets": [
             {
@@ -118,7 +118,7 @@ data:
         {
           "type": "stat",
           "title": "Réplicas disponibles (Deployment web)",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 6, "x": 12, "y": 16 },
           "targets": [
             {
@@ -135,7 +135,7 @@ data:
         {
           "type": "stat",
           "title": "Reinicios (últimos 15m) - web pods",
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 6, "x": 18, "y": 16 },
           "targets": [
             {
