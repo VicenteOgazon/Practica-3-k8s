@@ -127,33 +127,31 @@
   <script>
     async function updateStatus() {
       try {
-        const response = await fetch("/health");
-        const data = await response.json();
+        const res = await fetch("/health", { cache: "no-store" });
+        const data = await res.json();
 
-        for (const [service, state] of Object.entries(data)) {
-          const light = document.getElementById(`${service}-light`);
+        // Si responde, la web está "up"
+        document.getElementById("web-light").style.backgroundColor = "limegreen";
 
-          if (state === "up") {
-            light.style.backgroundColor = "limegreen";
-          } else if (state === "down") {
-            light.style.backgroundColor = "red";
-          } else {
-            light.style.backgroundColor = "gray";
-          }
-        }
+        // DB
+        document.getElementById("db-light").style.backgroundColor =
+          data.db ? "limegreen" : "red";
+
+        // Cache (puede ser null o false)
+        document.getElementById("cache-light").style.backgroundColor =
+          data.cache ? "limegreen" : "gray";
       } catch (e) {
-        console.error("Error actualizando estado:", e);
-        ["web", "db", "cache"].forEach((s) => {
-          document.getElementById(`${s}-light`).style.backgroundColor = "gray";
-          document.getElementById(`${s}-text`).textContent = "ERROR";
+        console.error("Error al obtener /health:", e);
+        ["web", "db", "cache"].forEach(id => {
+          document.getElementById(`${id}-light`).style.backgroundColor = "gray";
         });
       }
     }
 
-    // Ejecutar cada 5 segundos
     setInterval(updateStatus, 5000);
     updateStatus();
-  </script>
+</script>
+
 
 </body>
 </html>

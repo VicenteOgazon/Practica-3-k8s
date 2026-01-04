@@ -3,8 +3,7 @@ grafana:
     enabled: true
     ingressClassName: traefik
     hosts:
-      - grafana.dev.localhost
-      - grafana.pro.localhost
+      - monitoring.localhost
     path: /
     pathType: Prefix
 

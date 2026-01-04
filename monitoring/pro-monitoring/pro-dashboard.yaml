@@ -8,7 +8,7 @@ metadata:
   annotations:
     grafana_folder: "PRO"
 data:
-webapp-pro.json: |-
+  webapp-pro.json: |-
     {
       "uid": "pro-webapp",
       "title": "PRO - WebApp (Kubernetes + HTTP)",

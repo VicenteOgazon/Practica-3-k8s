@@ -1,26 +1,28 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: dev
+  name: pro
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: web-config
-  namespace: dev
+  namespace: pro
 data:
   MYSQL_HOST: mysql
   APP_PORT: "5000"
-  APP_ENV: development
-  USE_CACHE: "false"
-  MINIO_BUCKET: static-dev
+  APP_ENV: production
+  USE_CACHE: "true"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  MINIO_BUCKET: static-pro
   MINIO_PUBLIC_URL: http://minio:9000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mysql
-  namespace: dev
+  namespace: pro
 spec:
   selector:
     app: mysql
@@ -34,7 +36,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
-  namespace: dev
+  namespace: pro
 spec:
   serviceName: mysql
   replicas: 1
@@ -56,22 +58,22 @@ spec:
             - name: MYSQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_DATABASE
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_USER
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_PASSWORD
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_ROOT_PASSWORD
           volumeMounts:
             - name: mysql-data
@@ -82,7 +84,7 @@ spec:
       volumes:
         - name: host-mysql-init
           hostPath:
-            path: /imports/dev/mysql/init.sql
+            path: /imports/pro/mysql/init.sql
             type: File
   volumeClaimTemplates:
     - metadata:
@@ -98,7 +100,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: dev
+  namespace: pro
 spec:
   selector:
     app: minio
@@ -115,7 +117,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-data
-  namespace: dev
+  namespace: pro
 spec:
   accessModes: ["ReadWriteOnce"]
   storageClassName: local-path
@@ -127,7 +129,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: dev
+  namespace: pro
 spec:
   replicas: 1
   selector:
@@ -149,16 +151,16 @@ spec:
               name: console
           env:
             - name: MINIO_BUCKET
-              value: "static-dev"
+              value: "static-pro"
             - name: MINIO_ROOT_USER
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_USER
             - name: MINIO_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_PASSWORD
           volumeMounts:
             - name: minio-data
@@ -172,7 +174,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: minio-init
-  namespace: dev
+  namespace: pro
 spec:
   backoffLimit: 6
   template:
@@ -183,16 +185,16 @@ spec:
           image: minio/mc:RELEASE.2024-04-18T16-45-29Z
           env:
             - name: MINIO_BUCKET
-              value: "static-dev"
+              value: "static-pro"
             - name: MINIO_ROOT_USER
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_USER
             - name: MINIO_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_PASSWORD
           volumeMounts:
             - name: host-imports-minio
@@ -220,16 +222,52 @@ spec:
       volumes:
         - name: host-imports-minio
           hostPath:
-            path: /imports/dev/minio
+            path: /imports/pro/minio
             type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: pro
+spec:
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: pro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
-  namespace: dev
+  namespace: pro
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: web
@@ -240,7 +278,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: app:dev
+          image: app:pro
           ports:
             - containerPort: 5000
               name: http
@@ -251,27 +289,27 @@ spec:
             - name: MYSQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_DATABASE
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_USER
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MYSQL_PASSWORD
             - name: MINIO_ROOT_USER
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_USER
             - name: MINIO_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: dev-env
+                  name: pro-env
                   key: MINIO_ROOT_PASSWORD
             - name: INSTANCE_NAME
               valueFrom:
@@ -293,13 +331,12 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 2
             failureThreshold: 3
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: web
-  namespace: dev
+  namespace: pro
   labels:
     app: web
 spec:
@@ -315,13 +352,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: web
-  namespace: dev
+  namespace: pro
 spec:
-  # Si usas el Ingress Controller por defecto de k3s suele ser "traefik".
-  # Si instalas NGINX Ingress Controller, cambia esto a "nginx".
   ingressClassName: traefik
   rules:
-    - host: app.dev.localhost
+    - host: app.pro.localhost
       http:
         paths:
           - path: /
