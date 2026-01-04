@@ -4,8 +4,10 @@ grafana:
     ingressClassName: traefik
     hosts:
       - grafana.dev.localhost
+      - grafana.pro.localhost
     path: /
     pathType: Prefix
+
   sidecar:
     dashboards:
       enabled: true
@@ -14,6 +16,8 @@ grafana:
       folderAnnotation: grafana_folder
       provider:
         foldersFromFilesStructure: true
+
+    # OJO: esto es lo que te arregla el datasource y tu UID "prometheus"
     datasources:
       enabled: true
       defaultDatasourceEnabled: true
@@ -21,7 +25,6 @@ grafana:
       name: Prometheus
       uid: prometheus
       url: http://monitoring-kube-prometheus-prometheus:9090
-
 
 # En k3s/k3d, para evitar ruido/targets que no existen (muy típico), desactivamos scrapes de control-plane
 kubeEtcd:
@@ -40,7 +43,7 @@ defaultRules:
     kubeSchedulerAlerting: false
     kubeSchedulerRecording: false
 
-# Tu alerta obligatoria (DEV: quieres 2 réplicas disponibles)
+# Alertas por entorno
 additionalPrometheusRulesMap:
   dev-app-rules:
     groups:
@@ -54,3 +57,16 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "DEV: web con menos de 2 réplicas disponibles"
               description: "deployment dev/web tiene menos de 2 réplicas disponibles durante más de 2 minutos."
+
+  pro-app-rules:
+    groups:
+      - name: pro.web.availability
+        rules:
+          - alert: ProWebReplicasNotReady
+            expr: kube_deployment_status_replicas_available{namespace="pro", deployment="web"} < 4
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PRO: web con menos de 4 réplicas disponibles"
+              description: "deployment pro/web tiene menos de 4 réplicas disponibles durante más de 2 minutos."

@@ -199,6 +199,10 @@ def health():
         "cache": cache_ok if use_cache else None
     }), code
 
+@bp.route("/live", methods=["GET"])
+def live():
+    return jsonify({"ok": True}), 200
+
 
 @bp.route("/crash")
 def crash():

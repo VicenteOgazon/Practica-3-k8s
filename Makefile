@@ -14,11 +14,11 @@ ps:
 # Imágenes de la aplicación web
 build-dev:
 	sudo docker build --no-cache -f dockerfile/dev_Dockerfile -t app:dev .
-	sudo k3d image import app:dev -c dev
+	sudo k3d image import app:dev -c practica3
 
 build-pro:
 	sudo docker build --no-cache -f dockerfile/pro_Dockerfile -t app:pro .
-	sudo k3d image import app:pro -c pro
+	sudo k3d image import app:pro -c practica3
 
 help:
 	@echo ""
