@@ -69,3 +69,59 @@ additionalPrometheusRulesMap:
             annotations:
               summary: "PRO: web con menos de 4 réplicas disponibles"
               description: "deployment pro/web tiene menos de 4 réplicas disponibles durante más de 2 minutos."
+      - name: pro.db.availability
+        rules:
+          - alert: ProMySQLPodNotReady
+            expr: sum(kube_pod_status_ready{namespace="pro", pod=~"mysql-.*", condition="true"}) < 1
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PRO: MySQL no está Ready"
+              description: "No hay ningún pod de MySQL Ready en pro durante más de 1 minuto."
+
+alertmanager:
+  enabled: true
+
+  # Monta el secret dentro del pod de Alertmanager en:
+  # /etc/alertmanager/secrets/<nombre-del-secret>/<clave>
+  alertmanagerSpec:
+    secrets:
+      - alertmanager-smtp
+
+  # Configuración nativa de Alertmanager (ruta + receivers)
+  config:
+    global:
+      resolve_timeout: 5m
+
+      # SMTP (ejemplo con Gmail; ajusta a tu proveedor)
+      smtp_smarthost: "smtp.gmail.com:587"
+      smtp_from: "v.ogazon@gmail.com"
+      smtp_auth_username: "v.ogazon@gmail.com"
+
+      # Importante: lee la password desde el archivo montado del Secret
+      smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp_password"
+
+      # Normalmente true en 587 (STARTTLS)
+      smtp_require_tls: true
+
+    route:
+      group_by: ["alertname", "namespace"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+      receiver: "email"
+      routes:
+        # Evita spam del Watchdog si lo tienes habilitado
+        - match:
+            alertname: Watchdog
+          receiver: "null"
+
+    receivers:
+      - name: "null"
+
+      - name: "email"
+        email_configs:
+          - to: "vicente.ogazon1@estudiant.uib.cat"
+            send_resolved: true
