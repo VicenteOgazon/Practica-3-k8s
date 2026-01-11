@@ -1,7 +1,17 @@
 import mimetypes
 from urllib.parse import urlparse
 import os
-from flask import Blueprint, render_template, request, redirect, jsonify, current_app, url_for, Response, abort
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    jsonify,
+    current_app,
+    url_for,
+    Response,
+    abort,
+)
 from http import HTTPStatus
 import mysql.connector
 from mysql.connector import Error
@@ -11,19 +21,22 @@ from minio.error import S3Error
 
 bp = Blueprint("main", __name__)
 
+
 def get_container_name():
-   return current_app.config["INSTANCE_NAME"]
+    return current_app.config["INSTANCE_NAME"]
+
 
 # --- Funciones vacías de caché (se sobrescribirán en __init__.py si se usa Redis), me devuelven el error si estoy de entorno dev ---
 def get_cache(key):
     raise ConnectionError("Redis no disponible en este entorno")
 
+
 def set_cache(key, value):
     raise ConnectionError("Redis no disponible en este entorno")
 
+
 def delete_cache(key):
     raise ConnectionError("Redis no disponible en este entorno")
-
 
 
 # --- Conexión MySQL ---
@@ -33,7 +46,7 @@ def get_connection():
             host=current_app.config["MYSQL_HOST"],
             user=current_app.config["MYSQL_USER"],
             password=current_app.config["MYSQL_PASSWORD"],
-            database=current_app.config["MYSQL_DATABASE"]
+            database=current_app.config["MYSQL_DATABASE"],
         )
         return conn
     except Error as e:
@@ -59,11 +72,13 @@ def listar_usuarios_json():
     cache_key = "usuarios_todos"
     usuarios = None
     cache_accessible = False
-    use_cache=current_app.config.get("USE_CACHE", False)
+    use_cache = current_app.config.get("USE_CACHE", False)
 
     try:
         usuarios = get_cache(cache_key)
-        cache_accessible = True  # si get_cache pudo hablar con redis (aunque no haya key)
+        cache_accessible = (
+            True  # si get_cache pudo hablar con redis (aunque no haya key)
+        )
     except Exception as e:
         print(f"Error accediendo a Redis: {e}")
         cache_accessible = False
@@ -77,8 +92,10 @@ def listar_usuarios_json():
             if cache_accessible:
                 return "BBDD caída y caché vacía.", HTTPStatus.SERVICE_UNAVAILABLE
             return "BBDD y caché no disponibles.", HTTPStatus.SERVICE_UNAVAILABLE
-        return "No se pudo conectar con la base de datos", HTTPStatus.SERVICE_UNAVAILABLE
-
+        return (
+            "No se pudo conectar con la base de datos",
+            HTTPStatus.SERVICE_UNAVAILABLE,
+        )
 
     try:
         cursor = conn.cursor(dictionary=True)
@@ -113,10 +130,13 @@ def set_user():
 
     try:
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO usuarios (nombre, apellido, edad, correo, ciudad)
             VALUES (%s, %s, %s, %s, %s)
-        """, (nombre, apellido, edad, correo, ciudad))
+        """,
+            (nombre, apellido, edad, correo, ciudad),
+        )
         conn.commit()
         cursor.close()
         conn.close()
@@ -139,8 +159,10 @@ def delete_users():
 
         conn = get_connection()
         if conn is None:
-            return redirect("/?msg=" + quote("No se pudo conectar con la base de datos"))
-        
+            return redirect(
+                "/?msg=" + quote("No se pudo conectar con la base de datos")
+            )
+
         try:
             cursor = conn.cursor()
             formato = ",".join(["%s"] * len(ids))
@@ -197,6 +219,7 @@ def check_db() -> bool:
 def check_cache() -> bool:
     try:
         from .cache import get_cache_connection
+
         cache = get_cache_connection()
         return bool(cache) and bool(cache.ping())
     except Exception:
@@ -227,11 +250,10 @@ def health():
     ok = db_ok and (cache_ok if use_cache else True)
     code = HTTPStatus.OK if ok else HTTPStatus.SERVICE_UNAVAILABLE
 
-    return jsonify({
-        "ok": ok,
-        "db": db_ok,
-        "cache": cache_ok if use_cache else None
-    }), code
+    return (
+        jsonify({"ok": ok, "db": db_ok, "cache": cache_ok if use_cache else None}),
+        code,
+    )
 
 
 @bp.route("/ready", methods=["GET"])
@@ -253,19 +275,19 @@ def ready():
 
     code = HTTPStatus.OK if ready_ok else HTTPStatus.SERVICE_UNAVAILABLE
 
-    return jsonify({
-        "ready": ready_ok,
-        "db": db_ok,
-        "cache": cache_ok if use_cache else None
-    }), code
-
+    return (
+        jsonify(
+            {"ready": ready_ok, "db": db_ok, "cache": cache_ok if use_cache else None}
+        ),
+        code,
+    )
 
 
 @bp.route("/crash")
 def crash():
-    
+
     os._exit(1)
-    
+
     return "This will never be returned"
 
 
@@ -284,15 +306,20 @@ def asset(key: str):
         # Mejor: loguea para saber qué falta
         current_app.logger.error(
             "Missing MinIO config: MINIO_PUBLIC_URL=%r MINIO_BUCKET=%r MINIO_ACCESS_KEY=%r MINIO_SECRET_KEY=%r",
-            minio_base, bucket, bool(access_key), bool(secret_key)
+            minio_base,
+            bucket,
+            bool(access_key),
+            bool(secret_key),
         )
         abort(500)
 
     u = urlparse(minio_base)
     endpoint = u.netloc or u.path  # por si te pasan "minio:9000" sin esquema
-    secure = (u.scheme == "https")
+    secure = u.scheme == "https"
 
-    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=secure)
+    client = Minio(
+        endpoint, access_key=access_key, secret_key=secret_key, secure=secure
+    )
 
     try:
         obj = client.get_object(bucket, key)

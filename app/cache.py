@@ -2,13 +2,14 @@ import redis
 import json
 from flask import current_app
 
+
 def get_cache_connection():
     """Obtiene una conexión nueva a Redis usando la configuración de Flask."""
     try:
         return redis.StrictRedis(
             host=current_app.config["REDIS_HOST"],
             port=current_app.config["REDIS_PORT"],
-            decode_responses=True
+            decode_responses=True,
         )
     except Exception as e:
         print(f"Redis no disponible: {e}")

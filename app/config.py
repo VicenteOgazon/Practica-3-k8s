@@ -1,5 +1,6 @@
 import os
 
+
 class Config:
     INSTANCE_NAME = os.getenv("INSTANCE_NAME")
     MYSQL_HOST = os.getenv("MYSQL_HOST")
@@ -12,6 +13,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     USE_CACHE = False
+
 
 class ProductionConfig(Config):
     USE_CACHE = True
