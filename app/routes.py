@@ -87,6 +87,7 @@ def listar_usuarios_json():
         cursor.close()
         conn.close()
     except Exception as e:
+        print(f"No se pudo cargar los usuarios: {e}")
         return "No se pudo cargar los usuarios", HTTPStatus.SERVICE_UNAVAILABLE
 
     # Intentar guardar en caché
