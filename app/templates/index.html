@@ -19,7 +19,7 @@
     <h1>Gestión de Usuarios</h1>
     <!-- 🔹 Formulario para añadir usuario -->
     <h2>Agregar nuevo usuario</h2>
-    <form action="/set" method="post">
+    <form action="/set" method="post" id="formAgregar">
       <div class="form-group">
         <label for="nombre">Nombre</label>
         <input type="text" name="nombre" id="nombre" required />
@@ -92,12 +92,14 @@
     document.getElementById("btnCargar").addEventListener("click", async () => {
       try {
         const res = await fetch("/usuarios/json");
-        const data = await res.json();
 
-        if (!res.ok || data.error) {
-          showPopup(data.error || "Error desconocido al consultar la base de datos");
+        if (!res.ok) {
+          const msg = await res.text();
+          showPopup(msg || "Error desconocido al consultar la base de datos");
           return;
         }
+
+        const data = await res.json();
 
         const tbody = document.querySelector("#tablaUsuarios tbody");
         tbody.innerHTML = "";
@@ -119,11 +121,21 @@
         document.getElementById("tablaUsuarios").style.display = "table";
 
       } catch (err) {
-        showPopup("Error de conexión con el servidor Flask");
+        showPopup("Error de conexión con el servido");
       }
     });
   </script>
   
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const msg = params.get("msg");
+    if (msg) {
+      showPopup(decodeURIComponent(msg));
+      params.delete("msg");
+      history.replaceState({}, "", window.location.pathname);
+    }
+  </script>
+ 
   <script>
     async function updateStatus() {
       try {
@@ -139,7 +151,7 @@
 
         // Cache (puede ser null o false)
         document.getElementById("cache-light").style.backgroundColor =
-          data.cache ? "limegreen" : "gray";
+          data.cache ? "limegreen" : "red";
       } catch (e) {
         console.error("Error al obtener /health:", e);
         ["web", "db", "cache"].forEach(id => {
