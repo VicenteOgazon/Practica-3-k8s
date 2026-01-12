@@ -316,8 +316,6 @@ metadata:
   name: web
   namespace: dev
 spec:
-  # Si usas el Ingress Controller por defecto de k3s suele ser "traefik".
-  # Si instalas NGINX Ingress Controller, cambia esto a "nginx".
   ingressClassName: traefik
   rules:
     - host: app.dev.localhost

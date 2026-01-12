@@ -16,7 +16,7 @@ grafana:
       provider:
         foldersFromFilesStructure: true
 
-    # OJO: esto es lo que te arregla el datasource y tu UID "prometheus"
+    
     datasources:
       enabled: true
       defaultDatasourceEnabled: true
@@ -33,7 +33,7 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 
-# Y desactivamos reglas por defecto que dependen de esos componentes (si no, te saldrán alertas “basura”)
+# desactivamos reglas por defecto que dependen de esos componentes (si no, te saldrán alertas “basura”)
 defaultRules:
   create: true
   rules:
