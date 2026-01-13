@@ -6,6 +6,11 @@ grafana:
       - monitoring.localhost
     path: /
     pathType: Prefix
+  
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
 
   sidecar:
     dashboards:
@@ -15,7 +20,6 @@ grafana:
       folderAnnotation: grafana_folder
       provider:
         foldersFromFilesStructure: true
-
     
     datasources:
       enabled: true
