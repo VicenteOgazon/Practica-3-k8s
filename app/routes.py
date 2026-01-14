@@ -293,7 +293,7 @@ def crash():
 
 @bp.route("/assets/<path:key>", methods=["GET"])
 def asset(key: str):
-    
+
     if key != "fondo.png":
         abort(404)
 
@@ -303,7 +303,7 @@ def asset(key: str):
     secret_key = os.getenv("MINIO_ROOT_PASSWORD")
 
     if not minio_base or not bucket or not access_key or not secret_key:
-       
+
         current_app.logger.error(
             "Missing MinIO config: MINIO_PUBLIC_URL=%r MINIO_BUCKET=%r MINIO_ACCESS_KEY=%r MINIO_SECRET_KEY=%r",
             minio_base,
