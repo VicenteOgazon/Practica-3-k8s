@@ -21,6 +21,7 @@ from minio.error import S3Error
 
 bp = Blueprint("main", __name__)
 
+x = 1
 
 def get_container_name():
     return current_app.config["INSTANCE_NAME"]
