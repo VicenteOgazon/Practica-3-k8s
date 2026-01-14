@@ -65,7 +65,7 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      # Nombre del repositorio de imagen (ajústalo si quieres otro)
+
       IMAGE_REPO: ghcr.io/vicenteogazon/practica3-web
 
     steps:

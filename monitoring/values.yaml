@@ -29,7 +29,7 @@ grafana:
       uid: prometheus
       url: http://monitoring-kube-prometheus-prometheus:9090
 
-# En k3s/k3d, para evitar ruido/targets que no existen (muy típico), desactivamos scrapes de control-plane
+# En k3s/k3d, para evitar ruido/targets que no existen, desactivamos scrapes de control-plane
 kubeEtcd:
   enabled: false
 kubeControllerManager:
@@ -37,7 +37,7 @@ kubeControllerManager:
 kubeScheduler:
   enabled: false
 
-# desactivamos reglas por defecto que dependen de esos componentes (si no, te saldrán alertas “basura”)
+# desactivamos reglas por defecto que dependen de esos componentes (si no, saldrán alertas “basura”)
 defaultRules:
   create: true
   rules:
@@ -93,20 +93,17 @@ alertmanager:
     secrets:
       - alertmanager-smtp
 
-  # Configuración nativa de Alertmanager (ruta + receivers)
+  # Configuración nativa de Alertmanager
   config:
     global:
       resolve_timeout: 5m
 
-      # SMTP (ejemplo con Gmail; ajusta a tu proveedor)
       smtp_smarthost: "smtp.gmail.com:587"
       smtp_from: "v.ogazon@gmail.com"
       smtp_auth_username: "v.ogazon@gmail.com"
 
-      # Importante: lee la password desde el archivo montado del Secret
       smtp_auth_password_file: "/etc/alertmanager/secrets/alertmanager-smtp/smtp_password"
 
-      # Normalmente true en 587 (STARTTLS)
       smtp_require_tls: true
 
     route:

@@ -45,7 +45,6 @@ def wait_for_health(base_url: str, timeout_s: int = 30) -> dict:
         last_code = code
         last_body = body
 
-        # Queremos un JSON parseable para poder evaluar db/cache
         if isinstance(data, dict) and code in (200, 503):
             return data
 
