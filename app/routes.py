@@ -18,7 +18,6 @@ from mysql.connector import Error
 from urllib.parse import quote
 from minio import Minio
 from minio.error import S3Error
-import json
 
 bp = Blueprint("main", __name__)
 
