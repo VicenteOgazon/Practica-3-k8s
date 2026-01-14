@@ -239,11 +239,12 @@ spec:
   type: ClusterIP
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redis
   namespace: pro
 spec:
+  serviceName: redis
   replicas: 1
   selector:
     matchLabels:
