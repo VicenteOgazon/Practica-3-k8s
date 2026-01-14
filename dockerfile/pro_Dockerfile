@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir -r app/pro_requirements.txt
 
-# Crear usuario no root, solo tiene acceso a /app
-#RUN adduser --disabled-password newuser
-#RUN chown -R newuser:newuser /app
-#USER newuser
+#Crear usuario no root, solo tiene acceso a /app
+RUN adduser --disabled-password newuser
+RUN chown -R newuser:newuser /app
+USER newuser
 
 CMD ["python", "-m", "app"]

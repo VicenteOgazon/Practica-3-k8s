@@ -104,6 +104,9 @@ ingress-dev:
 endpoints-dev:
 	sudo kubectl -n dev get endpoints
 
+delete-pod-dev:
+	sudo kubectl -n dev delete pod $(pod)
+
 rollout-dev:
 	sudo kubectl -n dev rollout restart deployment/web
 
@@ -114,25 +117,31 @@ scale-bd-dev:
 	sudo kubectl -n dev scale statefulset mysql --replicas=$(n)
 
 logs-dev:
-	@if [ -z "$(POD)" ]; then echo "Uso: make logs-dev POD=<pod>"; exit 2; fi
-	sudo kubectl -n dev logs $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make logs-dev pod=<pod>"; exit 2; fi
+	sudo kubectl -n dev logs $(pod)
 
 describe-dev:
-	@if [ -z "$(POD)" ]; then echo "Uso: make describe-dev POD=<pod>"; exit 2; fi
-	sudo kubectl -n dev describe pod $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make describe-dev pod=<pod>"; exit 2; fi
+	sudo kubectl -n dev describe pod $(pod)
 
 events-dev:
 	sudo kubectl -n dev get events --sort-by=.lastTimestamp
 
 exec-dev:
-	@if [ -z "$(POD)" ]; then echo "Uso: make exec-dev POD=<pod>"; exit 2; fi
-	sudo kubectl -n dev exec -it $(POD) -- sh
+	@if [ -z "$(pod)" ]; then echo "Uso: make exec-dev pod=<pod>"; exit 2; fi
+	sudo kubectl -n dev exec -it $(pod) -- sh
+
+crash-pod-dev:
+	@if [ -z "$(pod)" ]; then echo "Uso: make crash-pod-dev pod=<pod>"; exit 2; fi
+	sudo kubectl -n dev exec -it $(pod) -- sh  -c 'curl http://127.0.0.1:5000/crash'
 
 curl-dev:
 	curl -I http://app.dev.localhost/
 
 health-dev:
 	curl -s http://app.dev.localhost/health; echo
+
+
 
 
 # =========================
@@ -148,6 +157,9 @@ svc-pro:
 ingress-pro:
 	sudo kubectl -n pro get ingress
 
+delete-pod-pro:
+	sudo kubectl -n pro delete pod $(pod)
+
 endpoints-pro:
 	sudo kubectl -n pro get endpoints
 
@@ -161,22 +173,27 @@ scale-bd-pro:
 	sudo kubectl -n pro scale statefulset mysql --replicas=$(n)
 
 scale-redis-pro:
-	sudo kubectl -n pro scale deploy/redis --replicas=$(n)
+	sudo kubectl -n pro scale statefulset redis --replicas=$(n)
 
 logs-pro:
-	@if [ -z "$(POD)" ]; then echo "Uso: make logs-pro POD=<pod>"; exit 2; fi
-	sudo kubectl -n pro logs $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make logs-pro pod=<pod>"; exit 2; fi
+	sudo kubectl -n pro logs $(pod)
 
 describe-pro:
-	@if [ -z "$(POD)" ]; then echo "Uso: make describe-pro POD=<pod>"; exit 2; fi
-	sudo kubectl -n pro describe pod $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make describe-pro pod=<pod>"; exit 2; fi
+	sudo kubectl -n pro describe pod $(pod)
 
 events-pro:
 	sudo kubectl -n pro get events --sort-by=.lastTimestamp
 
 exec-pro:
-	@if [ -z "$(POD)" ]; then echo "Uso: make exec-pro POD=<pod>"; exit 2; fi
-	sudo kubectl -n pro exec -it $(POD) -- sh
+	@if [ -z "$(pod)" ]; then echo "Uso: make exec-pro pod=<pod>"; exit 2; fi
+	sudo kubectl -n pro exec -it $(pod) -- sh
+
+crash-pod-pro:
+	@if [ -z "$(pod)" ]; then echo "Uso: make crash-pod-pro pod=<pod>"; exit 2; fi
+	sudo kubectl -n pro exec -it $(pod) -- sh  -c 'curl http://127.0.0.1:5000/crash'
+
 
 curl-pro:
 	curl -I http://app.pro.localhost/
@@ -204,17 +221,16 @@ events-monitoring:
 	sudo kubectl -n monitoring get events --sort-by=.lastTimestamp
 
 describe-monitoring:
-	@if [ -z "$(POD)" ]; then echo "Uso: make describe-monitoring POD=<pod>"; exit 2; fi
-	sudo kubectl -n monitoring describe pod $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make describe-monitoring pod=<pod>"; exit 2; fi
+	sudo kubectl -n monitoring describe pod $(pod)
 
 logs-monitoring:
-	@if [ -z "$(POD)" ]; then echo "Uso: make logs-monitoring POD=<pod>"; exit 2; fi
-	sudo kubectl -n monitoring logs $(POD)
+	@if [ -z "$(pod)" ]; then echo "Uso: make logs-monitoring pod=<pod>"; exit 2; fi
+	sudo kubectl -n monitoring logs $(pod)
 
 exec-monitoring:
-	@if [ -z "$(POD)" ]; then echo "Uso: make exec-monitoring POD=<pod>"; exit 2; fi
-	sudo kubectl -n monitoring exec -it $(POD) -- sh
-
+	@if [ -z "$(pod)" ]; then echo "Uso: make exec-monitoring pod=<pod>"; exit 2; fi
+	sudo kubectl -n monitoring exec -it $(pod) -- sh
 pf-prom:
 	sudo kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
 
@@ -307,13 +323,15 @@ help:
 	@echo "  make svc-dev                     - Lista Services DEV"
 	@echo "  make ingress-dev                 - Lista Ingress DEV"
 	@echo "  make endpoints-dev               - Lista Endpoints DEV"
+	@echo "  make delete-pod-dev pod=<pod>    - Elimina un pod DEV"
 	@echo "  make rollout-dev                 - Reinicia deployment/web DEV para forzar nueva imagen"
 	@echo "  make scale-web-dev n=<num>       - Escala web en DEV"
 	@echo "  make scale-bd-dev  n=<num>       - Escala mysql en DEV"
-	@echo "  make logs-dev POD=<pod>          - Muestra logs de un pod DEV"
-	@echo "  make describe-dev POD=<pod>      - Describe un pod DEV"
-	@echo "  make events-dev           		  - Muestra eventos del namespace dev"
-	@echo "  make exec-dev POD=<pod>          - Entra en un pod DEV por sh"
+	@echo "  make logs-dev pod=<pod>          - Muestra logs de un pod DEV"
+	@echo "  make describe-dev pod=<pod>      - Describe un pod DEV"
+	@echo "  make events-dev                  - Muestra eventos del namespace dev"
+	@echo "  make exec-dev pod=<pod>          - Entra en un pod DEV por sh"
+	@echo "  make crash-pod-dev pod=<pod>     - Provoca crash en un pod DEV"
 	@echo "  make curl-dev                    - Curl al host app.dev.localhost"
 	@echo "  make health-dev                  - GET /health en DEV"
 	@echo ""
@@ -322,14 +340,16 @@ help:
 	@echo "  make svc-pro                     - Lista Services PRO"
 	@echo "  make ingress-pro                 - Lista Ingress PRO"
 	@echo "  make endpoints-pro               - Lista Endpoints PRO"
+	@echo "  make delete-pod-pro pod=<pod>    - Elimina un pod PRO"
 	@echo "  make rollout-pro                 - Reinicia deployment/web PRO para forzar nueva imagen"
 	@echo "  make scale-web-pro  n=<num>      - Escala web en PRO"
 	@echo "  make scale-bd-pro   n=<num>      - Escala mysql en PRO"
 	@echo "  make scale-redis-pro n=<num>     - Escala redis en PRO"
-	@echo "  make logs-pro POD=<pod>          - Muestra logs de un pod PRO"
-	@echo "  make describe-pro POD=<pod>      - Describe un pod PRO"
-	@echo "  make events-pro           		  - Muestra eventos del namespace pro"
-	@echo "  make exec-pro POD=<pod>          - Entra en un pod PRO por sh"
+	@echo "  make logs-pro pod=<pod>          - Muestra logs de un pod PRO"
+	@echo "  make describe-pro pod=<pod>      - Describe un pod PRO"
+	@echo "  make events-pro                  - Muestra eventos del namespace pro"
+	@echo "  make exec-pro pod=<pod>          - Entra en un pod PRO por sh"
+	@echo "  make crash-pod-pro pod=<pod>     - Provoca crash en un pod PRO"
 	@echo "  make curl-pro                    - Curl al host app.pro.localhost"
 	@echo "  make health-pro                  - GET /health en PRO"
 	@echo ""
@@ -339,9 +359,9 @@ help:
 	@echo "  make ingress-monitoring          - Lista ingress de monitoring"
 	@echo "  make endpoints-monitoring        - Lista endpoints de monitoring"
 	@echo "  make events-monitoring           - Lista eventos del namespace monitoring"
-	@echo "  make logs-monitoring POD=<pod>   - Logs de un pod de monitoring"
-	@echo "  make describe-monitoring POD=<pod> - Describe un pod de monitoring"
-	@echo "  make exec-monitoring POD=<pod>   - Entra en un pod de monitoring sh"
+	@echo "  make logs-monitoring pod=<pod>   - Logs de un pod de monitoring"
+	@echo "  make describe-monitoring pod=<pod> - Describe un pod de monitoring"
+	@echo "  make exec-monitoring pod=<pod>   - Entra en un pod de monitoring sh"
 	@echo "  make pf-prom                     - Port-forward Prometheus a localhost:9090"
 	@echo "  make pf-alertmanager             - Port-forward Alertmanager a localhost:9093"
 	@echo ""

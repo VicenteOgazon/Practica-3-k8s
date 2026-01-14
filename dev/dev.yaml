@@ -110,24 +110,13 @@ spec:
       targetPort: 9001
   type: ClusterIP
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: minio-data
-  namespace: dev
-spec:
-  accessModes: ["ReadWriteOnce"]
-  storageClassName: local-path
-  resources:
-    requests:
-      storage: 5Gi
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: minio
   namespace: dev
 spec:
+  serviceName: minio
   replicas: 1
   selector:
     matchLabels:
@@ -162,10 +151,15 @@ spec:
           volumeMounts:
             - name: minio-data
               mountPath: /data
-      volumes:
-        - name: minio-data
-          persistentVolumeClaim:
-            claimName: minio-data
+  volumeClaimTemplates:
+    - metadata:
+        name: minio-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi
 ---
 apiVersion: batch/v1
 kind: Job
@@ -281,9 +275,9 @@ spec:
               path: /live
               port: 5000
             initialDelaySeconds: 15
-            periodSeconds: 20
+            periodSeconds: 10
             timeoutSeconds: 2
-            failureThreshold: 3
+            failureThreshold: 2
           readinessProbe:
             httpGet:
               path: /health
@@ -291,7 +285,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 2
-            failureThreshold: 3
+            failureThreshold: 2
 
 ---
 apiVersion: v1

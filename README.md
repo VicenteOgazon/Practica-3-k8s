@@ -52,7 +52,7 @@ git clone https://github.com/VicenteOgazon/Practica-3-k8s.git
 cd Practica-3-k8s
 ```
 
-### Para el poder entrar utilizando los ingress se debe añadir en /etc/hosts:
+### Para poder entrar utilizando los ingress se debe añadir en /etc/hosts:
 ```bash
 127.0.0.1 app.dev.localhost
 127.0.0.1 app.pro.localhost
@@ -60,7 +60,7 @@ cd Practica-3-k8s
 ```
 ### Crear ficheros de variables (secrets)
 
-Los secretos se gestionan como Secrets de Kubernetes, pero los valores sensibles se guardan en ficheros .env locales que no se suben al repositorio:
+Los secretos se gestionan como Secrets de Kubernetes, pero los valores sensibles se guardan en ficheros .env locales que no se suben al repositorio, por ello hay que crearlos en tu máquina local:
 ```bash
 - dev/dev.env
 - pro/pro.env
@@ -219,6 +219,12 @@ Características entorno de producción (Kubernetes pro):
 └── README.md                      # guía de instalación, explicación y pruebas
 ```
 ---
+
+## Diagrama
+
+![Diagrama de arquitectura](Diagrama.png)
+
+---
 ## Pruebas realizadas
 
 ### Entorno de desarrollo
@@ -307,8 +313,6 @@ make delete-pro                       - Elimina recursos PRO y borra el secret p
 
 # Monitoring (Prometheus / Grafana / Alertmanager)
 make monitoring-install               - Crea namespace+secrets y despliega kube-prometheus-stack con Helm
-make monitoring-dev                   - Aplica ServiceMonitor+Dashboard para DEV
-make monitoring-pro                   - Aplica ServiceMonitor+Dashboard para PRO
 make monitoring-delete                - Desinstala el stack de monitoring y borra el namespace
 
 # Diagnóstico general
